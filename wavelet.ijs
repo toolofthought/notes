@@ -10,7 +10,7 @@ A =. (2 ^ _1) * 1 1 ,: 1 _1
 approximation ; detail
 )
 
-get_approx =: 13 : '(2^x) # (approx2^:x) y'
+get_approx =: 13 : '(2^x) # (approx2^:x) y' "0 _
 
 idwt =: 3 : 0
 'approximation detail' =. y
