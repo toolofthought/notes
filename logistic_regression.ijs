@@ -1,52 +1,81 @@
-LL =: 4 : 0
-'features targets' =. y
-weights =: x
+l =: 4 : 0
+'features targets' =. x
+weights =. y
+
 scores =. features (+/ .*) weights
-+/ (targets * scores) - ^. 1 + ^ scores
+predictions =. (^ % 1 + ^) scores
+*/ (predictions ^ targets) * (-. predictions) ^ (-. targets)
 )
 
-NB.*GLL v gradient of log-likelihood function for logistic regression
-NB.
-NB. syntax:
-NB.   weights GLL (features ; targets) 
-NB. where
-NB.   features  - M-by-N matrix,
-NB.   targets   - M-by-1 matrix, 
-NB.   weights   - M-by-N matrix
+D=: 1 : 'u"0 D.1'
+VD=: 1 : 'u"1 D.1'
 
+ll =: 4 : 0
+'features targets' =. x
+weights =. y
 
-NB.*update_weight v update weights for log-likelihood function for logistic regression
-NB.
-NB. syntax:
-NB.   (features ; targets) update_weight weights 
-NB. where
-NB.   features  - M-by-N matrix,
-NB.   targets   - M-by-1 matrix, 
-NB.   weights   - M-by-N matrix
+scores =. features (+/ .*) weights
+predictions =. (^ % 1 + ^) scores
+^. */ (predictions ^ targets) * (-. predictions) ^ (-. targets)
+)
+
+gradient =: 4 : 0
+'features targets' =. x
+weights =. y
+scores =. features (+/ .*) weights
+predictions =. (^ % 1 + ^) scores
+
+(|: features) (+/ .*) targets - predictions
+)
+
+update_weight_backtracking =: 4 : 0
+'features targets' =. x
+weights =. y
+scores =. features (+/ .*) weights
+predictions =. (^ % 1 + ^) scores
+a =. 0.2
+b =. 0.8
+t =. 1
+
+delta =. x gradient y
+
+while.
+  trial =.(features ; targets) ll weights + t * delta
+  minimum =. ((features ; targets) ll weights) + a * delta (+/ .*) t * delta
+  trial < minimum
+do.
+  t =. b * t
+end.
+
+y + t * delta
+)
 
 update_weight =: 4 : 0
-step_size =. 1e_4
-weights =. y
 'features targets' =. x
-scores =: features (+/ .*) weights
+weights =. y
+scores =. features (+/ .*) weights
 predictions =. (^ % 1 + ^) scores
-gradient =. (|: features) (+/ .*) (targets - predictions)  
-weights =. weights + step_size * gradient
+delta =. x gradient y
+learning_rate =. 1e_5
+
+y + learning_rate * delta
 )
 
-NB.*LR v logistic regression
-NB.
-NB. syntax:
-NB.   targets LR features 
-NB. where
-NB.   features  - M-by-N matrix,
-NB.   targets   - M-by-1 matrix, 
-NB.
 LR =: 4 : 0
 features =. y
 targets =. x
 weights =. ({: $ features) $ 0
-(features ; targets) update_weight^:1e6 weights
+epsilon =. 1e_6
+
+next =. (features; targets) update_weight_backtracking weights
+while.
+  epsilon < %: (+/ .*)~ next - weights 
+do.
+  weights =. next
+  next =. (features; targets) update_weight_backtracking weights
+end.
+
+weights
 )
 
 hours =: ".;._2 ] 0 : 0
