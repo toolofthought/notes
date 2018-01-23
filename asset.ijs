@@ -7,7 +7,7 @@ require 'data/sqlite'
 
 NB. asset class
 coclass 'asset'
-NB.  mfuture =: ('105M8000';'2017-08-09 09:01:00';'2017-08-09 15:45:00') conew 'asset'
+NB.  mfuture =: ('105M8000';'2017-08-09';'2017-08-09';'09:01:00';'15:45:00') conew 'asset'
 query =: 'select %s from quotes where code="%s" and date(datetime) between "%s" and "%s" and time(datetime) between "%s" and "%s"'
 path_to_db =: 'C:\Users\yunskim\sites\pytrader\database\db.sqlite3'
 db =: sqlopen_psqlite_ path_to_db
