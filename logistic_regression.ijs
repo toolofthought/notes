@@ -41,8 +41,8 @@ delta =. x gradient y
 
 while.
   trial =.(features ; targets) ll weights + t * delta
-  minimum =. ((features ; targets) ll weights) + a * delta (+/ .*) t * delta
-  trial < minimum
+  minimum_improvement_guarantee =. ((features ; targets) ll weights) + a * delta (+/ .*) t * delta
+  trial < minimum_improvement_guarantee
 do.
   t =. b * t
 end.
