@@ -78,6 +78,8 @@ end.
 weights
 )
 
+NB. logistic regression example
+NB. from wikipedia https://en.wikipedia.org/wiki/Logistic_regression
 hours =: ".;._2 ] 0 : 0
 1  0.5
 1 0.75
@@ -102,3 +104,12 @@ hours =: ".;._2 ] 0 : 0
 )
 
 pass =: 0 0 0 0 0 0 1 0 1 0 1 0 1 0 1 1 1 1 1 1
+
+w =: pass LR hours
+
+ws =: (hours ; pass) update_weight_backtracking^:(i. 1e5) 0 0
+
+require 'plot'
+plot j./"1 ws
+
+
