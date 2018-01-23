@@ -1,3 +1,20 @@
+LL =: 4 : 0
+'features targets' =. y
+weights =: x
+scores =. features (+/ .*) weights
++/ (targets * scores) - ^. 1 + ^ scores
+)
+
+NB.*GLL v gradient of log-likelihood function for logistic regression
+NB.
+NB. syntax:
+NB.   weights GLL (features ; targets) 
+NB. where
+NB.   features  - M-by-N matrix,
+NB.   targets   - M-by-1 matrix, 
+NB.   weights   - M-by-N matrix
+
+
 NB.*update_weight v update weights for log-likelihood function for logistic regression
 NB.
 NB. syntax:
@@ -8,10 +25,10 @@ NB.   targets   - M-by-1 matrix,
 NB.   weights   - M-by-N matrix
 
 update_weight =: 4 : 0
-step_size =. 1e_3
+step_size =. 1e_4
 weights =. y
 'features targets' =. x
-scores =. features (+/ .*) weights
+scores =: features (+/ .*) weights
 predictions =. (^ % 1 + ^) scores
 gradient =. (|: features) (+/ .*) (targets - predictions)  
 weights =. weights + step_size * gradient
@@ -29,7 +46,7 @@ LR =: 4 : 0
 features =. y
 targets =. x
 weights =. ({: $ features) $ 0
-(features ; targets) update_weight^:_ weights
+(features ; targets) update_weight^:1e6 weights
 )
 
 hours =: ".;._2 ] 0 : 0
