@@ -41,8 +41,8 @@ delta =. x gradient y
 
 while.
   trial =.(features ; targets) ll weights + t * delta
-  minimum_improvement_guarantee =. ((features ; targets) ll weights) + a * delta (+/ .*) t * delta
-  trial < minimum_improvement_guarantee
+  minimum_increment_guarantee =. ((features ; targets) ll weights) + a * delta (+/ .*) t * delta
+  trial < minimum_increment_guarantee
 do.
   t =. b * t
 end.
@@ -111,5 +111,3 @@ ws =: (hours ; pass) update_weight_backtracking^:(i. 1e5) 0 0
 
 require 'plot'
 plot j./"1 ws
-
-
