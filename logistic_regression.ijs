@@ -25,8 +25,18 @@ weights =. y
 scores =. features (+/ .*) weights
 predictions =. (^ % 1 + ^) scores
 
-(|: features) (+/ .*) targets - predictions
+(|: features) (+/ .*)  targets - predictions
 )
+
+gradient_average =: 4 : 0
+'features targets' =. x
+weights =. y
+scores =. features (+/ .*) weights
+predictions =. (^ % 1 + ^) scores
+
+(|: features) (+/ .*) (%#targets) * targets - predictions
+)
+
 
 update_weight_backtracking =: 4 : 0
 'features targets' =. x
@@ -50,6 +60,29 @@ end.
 y + t * delta
 )
 
+update_weight_backtracking_average =: 4 : 0
+'features targets' =. x
+weights =. y
+scores =. features (+/ .*) weights
+predictions =. (^ % 1 + ^) scores
+a =. 0.2
+b =. 0.8
+t =. 1
+
+delta =. x gradient_average y
+
+while.
+  trial =.(features ; targets) ll weights + t * delta
+  minimum_increment_guarantee =. ((features ; targets) ll weights) + a * delta (+/ .*) t * delta
+  trial < minimum_increment_guarantee
+do.
+  t =. b * t
+end.
+
+y + t * delta
+)
+
+
 update_weight =: 4 : 0
 'features targets' =. x
 weights =. y
@@ -65,14 +98,14 @@ LR =: 4 : 0
 features =. y
 targets =. x
 weights =. ({: $ features) $ 0
-epsilon =. 1e_6
+epsilon =. 1e_8
 
-next =. (features; targets) update_weight_backtracking weights
+next =. (features; targets) update_weight_backtracking_average weights
 while.
   epsilon < %: (+/ .*)~ next - weights 
 do.
   weights =. next
-  next =. (features; targets) update_weight_backtracking weights
+  next =. (features; targets) update_weight_backtracking_average weights
 end.
 
 weights
@@ -107,7 +140,7 @@ pass =: 0 0 0 0 0 0 1 0 1 0 1 0 1 0 1 1 1 1 1 1
 
 w =: pass LR hours
 
-ws =: (hours ; pass) update_weight_backtracking^:(i. 1e5) 0 0
+NB. ws =: (hours ; pass) update_weight_backtracking^:(i. 1e5) 0 0
 
 require 'plot'
 plot j./"1 ws
