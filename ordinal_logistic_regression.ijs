@@ -1,46 +1,54 @@
-load jpath '~home/sites/notes/logistic_regression.ijs'
+NB. load jpath '~home/sites/notes/logistic_regression.ijs'
 
-update_weight_backtracking_average_delta =: 4 : 0
+update_weights_backtracking_average_delta =: 4 : 0
 'features targets' =. x
-weights =. y
+'weights delta' =. y
 scores =. features (+/ .*) weights
 predictions =. (^ % 1 + ^) scores
+grad =. x gradient_average weights
 a =. 0.2
 b =. 0.8
 t =. 1
 
-delta =. x gradient_average y
-delta_olr =. x gradient_average y
-
 while.
-  trial =.(features ; targets) ll weights + t * delta_olr
-  minimum_increment_guarantee =. ((features ; targets) ll weights) + a * delta (+/ .*) t * delta
+  trial =.(features ; targets) ll weights + t * delta
+  minimum_increment_guarantee =. ((features ; targets) ll weights) + a * grad (+/ .*) t * delta
   trial < minimum_increment_guarantee
 do.
   t =. b * t
 end.
 
-base_weights ; y + t * delta_olr
+(weights + t * delta) ; delta
 )
 
 OLR =: 4 : 0
 features =. y
 targets =. x
-
-base_targets =. [`{.@.(2 <: #@$) targets 
-base_weights =. ({: $ features) $ 0
-
 epsilon =. 1e_8
 
-NB. get base_weights
-next =. (features; base_targets) update_weight_backtracking_average base_weights
-while.
-  epsilon < %: (+/ .*)~ next - base_weights 
-do.
-  base_weights =. next
-  next =. (features; base_targets) update_weight_backtracking_average base_weights
-end.
+NB. 첫번째 targets으로 base weights을 정함
+base_targets =. ]`{.@.(2 <: #@$) targets
+base_weights =. base_targets LR features
 
-base_weights
+ret =. ,: base_weights
+
+for_i.
+  >: i. <: # targets
+do.
+  t =. i { targets
+  w =. base_weights
+  delta =. ({: $ features) $ 1 0
+  'next delta' =. (features; t) update_weights_backtracking_average_delta w ; delta
+  while.
+    epsilon < %: (+/ .*)~ next - w 
+  do.
+    w =. next
+    'next delta' =. (features; t) update_weights_backtracking_average_delta w ; delta
+  end.
+  ret =. ret , w
+end.
+ret
 )
 
+NB. usage
+NB. 'key 1 2 3' plot (^ % 1 + ^)  |: hours (+/ .*) |: (pass,pass2,:pass3) OLR hours
