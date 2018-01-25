@@ -37,7 +37,9 @@ for_i.
 do.
   t =. i { targets
   w =. base_weights
-  delta =. ({: $ features) $ 1 0
+  NB. intercept 방향으로만 증가
+  NB. intercept가 커질수록 확률 증가
+  delta =. ({: $ features) {. 1 0
   'next delta' =. (features; t) update_weights_backtracking_average_delta w ; delta
   while.
     epsilon < %: (+/ .*)~ next - w 
