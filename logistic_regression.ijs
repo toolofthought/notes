@@ -38,7 +38,7 @@ predictions =. (^ % 1 + ^) scores
 )
 
 
-update_weight_backtracking =: 4 : 0
+update_weights_backtracking =: 4 : 0
 'features targets' =. x
 weights =. y
 scores =. features (+/ .*) weights
@@ -60,7 +60,7 @@ end.
 y + t * delta
 )
 
-update_weight_backtracking_average =: 4 : 0
+update_weights_backtracking_average =: 4 : 0
 'features targets' =. x
 weights =. y
 scores =. features (+/ .*) weights
@@ -69,11 +69,12 @@ a =. 0.2
 b =. 0.8
 t =. 1
 
+grad =. x gradient_average y
 delta =. x gradient_average y
 
 while.
   trial =.(features ; targets) ll weights + t * delta
-  minimum_increment_guarantee =. ((features ; targets) ll weights) + a * delta (+/ .*) t * delta
+  minimum_increment_guarantee =. ((features ; targets) ll weights) + a * grad (+/ .*) t * delta
   trial < minimum_increment_guarantee
 do.
   t =. b * t
@@ -83,7 +84,8 @@ y + t * delta
 )
 
 
-update_weight =: 4 : 0
+
+update_weights =: 4 : 0
 'features targets' =. x
 weights =. y
 scores =. features (+/ .*) weights
@@ -100,16 +102,17 @@ targets =. x
 weights =. ({: $ features) $ 0
 epsilon =. 1e_8
 
-next =. (features; targets) update_weight_backtracking_average weights
+next =. (features; targets) update_weights_backtracking_average weights
 while.
   epsilon < %: (+/ .*)~ next - weights 
 do.
   weights =. next
-  next =. (features; targets) update_weight_backtracking_average weights
+  next =. (features; targets) update_weights_backtracking_average weights
 end.
 
 weights
 )
+
 
 NB. logistic regression example
 NB. from wikipedia https://en.wikipedia.org/wiki/Logistic_regression
@@ -136,11 +139,13 @@ hours =: ".;._2 ] 0 : 0
 1  5.5
 )
 
-pass =: 0 0 0 0 0 0 1 0 1 0 1 0 1 0 1 1 1 1 1 1
+pass =:  0 0 0 0 0 0 1 0 1 0 1 0 1 0 1 1 1 1 1 1
+pass2 =: 0 0 0 0 0 0 1 0 1 0 1 0 1 1 1 1 1 1 1 1
+pass3 =: 0 0 0 0 0 0 1 0 1 1 1 1 1 1 1 1 1 1 1 1
 
 w =: pass LR hours
 
 NB. ws =: (hours ; pass) update_weight_backtracking^:(i. 1e5) 0 0
 
-require 'plot'
-plot j./"1 ws
+NB. require 'plot'
+NB. plot j./"1 ws
