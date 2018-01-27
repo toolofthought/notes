@@ -35,10 +35,10 @@ update_weights =: 4 : 0
 weights =. y
 scores =. features dot weights
 predictions=. sigmoid scores
-delta =. (features ; targets) gradient weights
+grad =. (%#targets) * (|: features) dot targets - predictions
 learning_rate =. 1
 
-weights + learning_rate * delta
+weights + learning_rate * grad
 )
 
 update_weights_given_delta =: 4 : 0

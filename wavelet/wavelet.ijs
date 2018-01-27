@@ -10,6 +10,12 @@ A =. (2 ^ _1) * 1 1 ,: 1 _1
 approximation ; detail
 )
 
+approx2 =: 3 : 0
+A =. (2 ^ _1) * 1 1 ,: 1 _1
+'approximation detail' =. |: _2 A&(+/ .*)\ y
+approximation
+)
+
 get_approx =: 13 : '(2^x) # (approx2^:x) y' "0 _
 
 idwt =: 3 : 0
