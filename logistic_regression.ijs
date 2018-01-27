@@ -1,151 +1,65 @@
-l =: 4 : 0
+dot =: +/ .*
+sigmoid =: ^ % 1 + ^
+
+likelihood =: 4 : 0
 'features targets' =. x
 weights =. y
 
-scores =. features (+/ .*) weights
-predictions =. (^ % 1 + ^) scores
-*/ (predictions ^ targets) * (-. predictions) ^ (-. targets)
+scores =. features dot weights
+predictions =. sigmoid scores
+
+(predictions ^ targets) (*/ .*) (-. predictions) ^ -. targets 
 )
 
-D=: 1 : 'u"0 D.1'
-VD=: 1 : 'u"1 D.1'
-
-ll =: 4 : 0
+loglikelihood =: 4 : 0
 'features targets' =. x
 weights =. y
 
-scores =. features (+/ .*) weights
-predictions =. (^ % 1 + ^) scores
-^. */ (predictions ^ targets) * (-. predictions) ^ (-. targets)
+scores =. features dot weights
+predictions =. sigmoid scores
+
++/ (targets * scores) - ^. 1 + ^ scores
 )
 
 gradient =: 4 : 0
 'features targets' =. x
 weights =. y
-scores =. features (+/ .*) weights
-predictions =. (^ % 1 + ^) scores
+scores =. features dot weights
+predictions=. sigmoid scores
 
-(|: features) (+/ .*)  targets - predictions
+(%#targets) * (|: features) dot targets - predictions
 )
-
-gradient_average =: 4 : 0
-'features targets' =. x
-weights =. y
-scores =. features (+/ .*) weights
-predictions =. (^ % 1 + ^) scores
-
-(|: features) (+/ .*) (%#targets) * targets - predictions
-)
-
-
-update_weights_backtracking =: 4 : 0
-'features targets' =. x
-weights =. y
-scores =. features (+/ .*) weights
-predictions =. (^ % 1 + ^) scores
-a =. 0.2
-b =. 0.8
-t =. 1
-
-delta =. x gradient y
-
-while.
-  trial =.(features ; targets) ll weights + t * delta
-  minimum_increment_guarantee =. ((features ; targets) ll weights) + a * delta (+/ .*) t * delta
-  trial < minimum_increment_guarantee
-do.
-  t =. b * t
-end.
-
-y + t * delta
-)
-
-update_weights_backtracking_average =: 4 : 0
-'features targets' =. x
-weights =. y
-scores =. features (+/ .*) weights
-predictions =. (^ % 1 + ^) scores
-a =. 0.2
-b =. 0.8
-t =. 1
-
-grad =. x gradient_average y
-delta =. x gradient_average y
-
-while.
-  trial =.(features ; targets) ll weights + t * delta
-  minimum_increment_guarantee =. ((features ; targets) ll weights) + a * grad (+/ .*) t * delta
-  trial < minimum_increment_guarantee
-do.
-  t =. b * t
-end.
-
-y + t * delta
-)
-
-
 
 update_weights =: 4 : 0
 'features targets' =. x
 weights =. y
-scores =. features (+/ .*) weights
-predictions =. (^ % 1 + ^) scores
-delta =. x gradient y
-learning_rate =. 1e_5
+scores =. features dot weights
+predictions=. sigmoid scores
+delta =. (features ; targets) gradient weights
+learning_rate =. 1
 
-y + learning_rate * delta
+weights + learning_rate * delta
 )
 
 LR =: 4 : 0
-features =. y
 targets =. x
-weights =. ({: $ features) $ 0
-epsilon =. 1e_8
+features =. y
+weights =. ({:$ features) $ 0
 
-next =. (features; targets) update_weights_backtracking_average weights
+scores =. features dot weights
+predictions=. sigmoid scores
+epsilon =. 1e_8
+max_iteration =. 1e6
+iteration =. 0
+delta =. (features ; targets) gradient weights
+
 while.
-  epsilon < %: (+/ .*)~ next - weights 
+  (epsilon < %: dot~ delta) *. (iteration < max_iteration)
 do.
-  weights =. next
-  next =. (features; targets) update_weights_backtracking_average weights
+  weights =. (features ; targets) update_weights weights
+  delta =. (features ; targets) gradient weights
+  iteration =. >: iteration
 end.
 
 weights
 )
-
-
-NB. logistic regression example
-NB. from wikipedia https://en.wikipedia.org/wiki/Logistic_regression
-hours =: ".;._2 ] 0 : 0
-1  0.5
-1 0.75
-1    1
-1 1.25
-1  1.5
-1 1.75
-1 1.75
-1    2
-1 2.25
-1  2.5
-1 2.75
-1    3
-1 3.25
-1  3.5
-1    4
-1 4.25
-1  4.5
-1 4.75
-1    5
-1  5.5
-)
-
-pass =:  0 0 0 0 0 0 1 0 1 0 1 0 1 0 1 1 1 1 1 1
-pass2 =: 0 0 0 0 0 0 1 0 1 0 1 0 1 1 1 1 1 1 1 1
-pass3 =: 0 0 0 0 0 0 1 0 1 1 1 1 1 1 1 1 1 1 1 1
-
-w =: pass LR hours
-
-NB. ws =: (hours ; pass) update_weight_backtracking^:(i. 1e5) 0 0
-
-NB. require 'plot'
-NB. plot j./"1 ws
