@@ -36,8 +36,6 @@ scores =. features dot weights
 predictions=. sigmoid scores
 delta =. grad =. (%#targets) * (|: features) dot targets - predictions
 
-ll =. +/ (targets * scores) - ^. 1 + ^ scores
-
 a =. 0.3
 b =. 0.8
 t =. 1
@@ -53,15 +51,27 @@ end.
 weights + t * delta
 )
 
+
 update_weights_given_delta =: 4 : 0
 'features targets' =. x
 'weights delta' =. y
 scores =. features dot weights
 predictions=. sigmoid scores
-grad =. (features ; targets) gradient weights
-learning_rate =. 1
+grad =. (%#targets) * (|: features) dot targets - predictions
 
-(weights + learning_rate * delta * grad dot delta) ; delta 
+a =. 0.3
+b =. 0.8
+t =. 1
+
+while.
+  trial =.  (features ; targets) loglikelihood weights + t * delta
+  minimum_increment_guarantee =. ((features ; targets) loglikelihood weights) + a * grad dot t * delta
+  trial < minimum_increment_guarantee
+do.
+  t =. b * t
+end.
+
+(weights + t * delta) ; delta
 )
 
 LR =: 4 : 0
